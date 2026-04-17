@@ -3,6 +3,7 @@
   "private": false,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://glenman.github.io/sh-highschool-apply",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
