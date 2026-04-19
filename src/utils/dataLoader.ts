@@ -2,7 +2,7 @@
 export const loadSchoolData = async (): Promise<any[]> => {
   try {
     // 从public/data目录加载JSON文件
-    const response = await fetch('/data/shanghai_high_schools.json');
+    const response = await fetch('./data/shanghai_high_schools.json');
     if (!response.ok) {
       throw new Error('Failed to load school data');
     }
