@@ -207,17 +207,19 @@ function App() {
       // 5. 生成分配到区推荐（1个志愿）
       const generateDistrictQuota = () => {
         // 筛选出有分配到区计划的学校
-        const districtSchools = sortedSchools.filter(school => (school['25年到区'] || 0) > 0);
+        const districtSchools = eligibleSchools
+          .filter(school => (school['25年到区'] || 0) > 0 && school['25年到区加权均分'] !== null && school['25年到区加权均分'] !== undefined)
+          .sort((a, b) => (b['25年到区加权均分'] || 0) - (a['25年到区加权均分'] || 0));
         
         // 按照规则：不低于L分，A类：L+10~L+20
         const recommendedSchools = districtSchools.filter(school => {
-          const score = school['25年三批次加权均分'] || 0;
+          const score = school['25年到区加权均分'] || 0;
           return score >= L && score <= L + 20;
         }).slice(0, 3);
         
         return recommendedSchools.map((school, index) => ({
           name: school.学校名称,
-          score: school['25年三批次加权均分'] || 0,
+          score: school['25年到区加权均分'] || 0,
           rank: index + 1,
           level: school.学校层次 || ''
         }));
@@ -226,14 +228,16 @@ function App() {
       // 6. 生成分配到校推荐（2个志愿）
       const generateSchoolQuota = () => {
         // 筛选出有分配到校计划的学校
-        const schoolSchools = sortedSchools.filter(school => (school['25年到校'] || 0) > 0);
+        const schoolSchools = eligibleSchools
+          .filter(school => (school['25年到校'] || 0) > 0 && school['25年到校加权均分'] !== null && school['25年到校加权均分'] !== undefined)
+          .sort((a, b) => (b['25年到校加权均分'] || 0) - (a['25年到校加权均分'] || 0));
         
         console.log('有分配到校计划的学校数量:', schoolSchools.length);
         
         // 按照规则：D ≥ L + 5 → 必须填；L – 5 < D < L + 5 → 建议填；D ≤ L – 5 → 不填
         // 但需要避免推荐分数过高的学校，只推荐分数与L相近的学校
         const recommendedSchools = schoolSchools.filter(school => {
-          const score = school['25年三批次加权均分'] || 0;
+          const score = school['25年到校加权均分'] || 0;
           // 只推荐分数在L-10到L+20之间的学校，避免推荐分数过高的学校
           return score >= L - 10 && score <= L + 20;
         }).slice(0, 2);
@@ -242,7 +246,7 @@ function App() {
         
         return recommendedSchools.map((school, index) => ({
           name: school.学校名称,
-          score: school['25年三批次加权均分'] || 0,
+          score: school['25年到校加权均分'] || 0,
           rank: index + 1,
           level: school.学校层次 || ''
         }));
