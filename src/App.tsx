@@ -227,9 +227,23 @@ function App() {
       
       // 6. 生成分配到校推荐（2个志愿）
       const generateSchoolQuota = () => {
+        // 特殊处理：实验学校和上师附中的名额到校只对浦东新区开放
+        const restrictedSchools = ['实验学校', '上师附中'];
+        
         // 筛选出有分配到校计划的学校
-        const schoolSchools = eligibleSchools
-          .filter(school => (school['25年到校'] || 0) > 0 && school['25年到校加权均分'] !== null && school['25年到校加权均分'] !== undefined)
+        // 如果用户所在区不是浦东新区，则排除实验学校和上师附中
+        let schoolSchools = eligibleSchools
+          .filter(school => {
+            const hasQuota = (school['25年到校'] || 0) > 0 && school['25年到校加权均分'] !== null && school['25年到校加权均分'] !== undefined;
+            const isRestricted = restrictedSchools.some(name => school.学校名称.includes(name));
+            
+            // 如果是限制学校且用户不在浦东新区，则排除
+            if (isRestricted && info.district !== '浦东新区') {
+              return false;
+            }
+            
+            return hasQuota;
+          })
           .sort((a, b) => (b['25年到校加权均分'] || 0) - (a['25年到校加权均分'] || 0));
         
         console.log('有分配到校计划的学校数量:', schoolSchools.length);
